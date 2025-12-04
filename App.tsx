@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { PromptCard } from './components/PromptCard';
 import { Playground } from './components/Playground';
 import { PromptItem } from './types';
-import { Search, Download, Menu, Sun, Moon, Eye } from 'lucide-react';
+import { Search, Download, Menu, Sun, Moon, Eye, MessageSquare } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 
 export default function App() {
@@ -12,6 +12,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [playgroundItem, setPlaygroundItem] = useState<PromptItem | null>(null);
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
+  const [playgroundMode, setPlaygroundMode] = useState<'generator' | 'chat'>('generator');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile menu state
   
   const { theme, setTheme, playClick } = useTheme();
@@ -45,6 +46,13 @@ export default function App() {
 
   const handleOpenPlayground = (item: PromptItem) => {
     setPlaygroundItem(item);
+    setPlaygroundMode('generator');
+    setIsPlaygroundOpen(true);
+  };
+
+  const handleOpenChat = () => {
+    setPlaygroundItem(null);
+    setPlaygroundMode('chat');
     setIsPlaygroundOpen(true);
   };
 
@@ -135,6 +143,14 @@ export default function App() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+             <button
+                onClick={() => { playClick(); handleOpenChat(); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold ${theme === 'high-contrast' ? 'bg-white text-black border-white' : 'bg-stone-100 text-stone-700 border-stone-200 hover:border-klimt-gold'}`}
+             >
+                <MessageSquare size={18} />
+                <span>AI Chat</span>
+             </button>
+
              <button 
                 onClick={toggleTheme}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold ${theme === 'high-contrast' ? 'border-white text-white hover:bg-white hover:text-black' : 'border-stone-200 hover:bg-stone-100'}`}
@@ -234,7 +250,8 @@ export default function App() {
       <Playground 
         item={playgroundItem} 
         isOpen={isPlaygroundOpen} 
-        onClose={() => setIsPlaygroundOpen(false)} 
+        onClose={() => setIsPlaygroundOpen(false)}
+        initialMode={playgroundMode}
       />
     </div>
   );

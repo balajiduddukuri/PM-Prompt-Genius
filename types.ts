@@ -1,5 +1,5 @@
 
-export type Category = 'Waterfall' | 'Agile' | 'SAFe' | 'Roles' | 'Jira' | 'General' | 'Inspiration';
+export type Category = 'Waterfall' | 'Agile' | 'SAFe' | 'Roles' | 'Jira' | 'General' | 'Inspiration' | 'Documentation';
 
 export type ThemeMode = 'light' | 'dark' | 'high-contrast';
 

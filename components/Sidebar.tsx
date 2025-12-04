@@ -9,7 +9,8 @@ import {
   Layout, 
   Box,
   Palette,
-  Lightbulb
+  Lightbulb,
+  FileText
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 
@@ -28,6 +29,7 @@ const CATEGORY_CONFIG: Record<Category, { icon: React.ReactNode, label: string }
   'Roles': { icon: <Users aria-hidden="true" size={18} />, label: 'Team Roles' },
   'Jira': { icon: <Terminal aria-hidden="true" size={18} />, label: 'Jira Toolkit' },
   'General': { icon: <Box aria-hidden="true" size={18} />, label: 'General' },
+  'Documentation': { icon: <FileText aria-hidden="true" size={18} />, label: 'Docs & Reports' },
   'Inspiration': { icon: <Lightbulb aria-hidden="true" size={18} />, label: 'Wisdom & Drive' },
 };
 

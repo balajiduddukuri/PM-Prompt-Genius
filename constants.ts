@@ -1,5 +1,6 @@
 
 
+
 import { Section } from './types';
 
 export const PROMPT_SECTIONS: Section[] = [
@@ -196,6 +197,38 @@ export const PROMPT_SECTIONS: Section[] = [
     ]
   },
   {
+    id: 'docs-reporting',
+    title: 'Documentation & Reporting',
+    category: 'Documentation',
+    description: 'Templates for release notes, SOPs, and executive summaries.',
+    items: [
+      {
+        id: 'doc-1',
+        title: 'Release Notes Generator',
+        text: 'Turn the following technical commit messages into user-friendly Release Notes categorized by New Features, Improvements, and Bug Fixes: [Insert Git Log]',
+        tags: ['Release', 'Writing']
+      },
+      {
+        id: 'doc-2',
+        title: 'Executive Summary',
+        text: 'Summarize the attached 20-page technical architecture document into a 1-page Executive Summary focusing on business value, costs, and strategic alignment.',
+        tags: ['Executive', 'Summary']
+      },
+      {
+        id: 'doc-3',
+        title: 'SOP Generator',
+        text: 'Create a Standard Operating Procedure (SOP) for "Incident Response Level 1" including Purpose, Scope, Roles, Flowchart description, and Step-by-Step instructions.',
+        tags: ['Process', 'SOP']
+      },
+      {
+        id: 'doc-4',
+        title: 'Project Handover Doc',
+        text: 'Draft a Project Handover document structure for transferring a completed software project to the Operations team, including System Overview, Known Issues, and FAQs.',
+        tags: ['Handover', 'Operations']
+      }
+    ]
+  },
+  {
     id: 'jira-auto',
     title: 'Jira Automation Toolkit',
     category: 'Jira',
@@ -234,7 +267,7 @@ export const PROMPT_SECTIONS: Section[] = [
       {
         id: 'jira-py-1',
         title: 'Python API Script',
-        text: 'Explain the following Python code for Jira API interaction.',
+        text: 'This script demonstrates how to authenticate with the Jira REST API using the requests library and fetch issues that have been blocked in the last 2 days. It uses Basic Auth with an API token.',
         codeSnippet: {
           language: 'python',
           code: `import requests

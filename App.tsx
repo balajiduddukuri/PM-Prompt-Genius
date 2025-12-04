@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { PromptCard } from './components/PromptCard';
 import { Playground } from './components/Playground';
 import { PromptItem } from './types';
-import { Search, Download, Menu, Sun, Moon, Eye, MessageSquare } from 'lucide-react';
+import { Search, Download, Menu, Sun, Moon, Eye, Zap, MessageSquare } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 
 export default function App() {
@@ -60,21 +60,75 @@ export default function App() {
     playClick();
     if (theme === 'light') setTheme('dark');
     else if (theme === 'dark') setTheme('high-contrast');
+    else if (theme === 'high-contrast') setTheme('neon');
     else setTheme('light');
+  };
+
+  const handleExportBundle = () => {
+      playClick();
+      const bundle = {
+          metadata: {
+              title: "PM Prompt Genius Bundle",
+              date: new Date().toISOString(),
+              version: "1.0",
+              author: "BalajiDuddukuri"
+          },
+          sections: PROMPT_SECTIONS
+      };
+      
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pm-prompt-bundle-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
   };
 
   const getThemeIcon = () => {
     if (theme === 'light') return <Sun size={20} />;
     if (theme === 'dark') return <Moon size={20} />;
-    return <Eye size={20} />;
+    if (theme === 'high-contrast') return <Eye size={20} />;
+    return <Zap size={20} />;
   };
 
+  const getThemeLabel = () => {
+      if (theme === 'high-contrast') return 'Contrast';
+      if (theme === 'neon') return 'Neon';
+      return theme;
+  }
+
+  // Dynamic Styles
+  const bgClass = {
+    'light': 'bg-stone-50 text-stone-900',
+    'dark': 'bg-stone-900 text-stone-50', // Dark mode handled via 'dark' class mostly, but explicit here too
+    'high-contrast': 'bg-black text-white',
+    'neon': 'bg-neon-bg text-neon-cyan'
+  }[theme];
+
+  const headerClass = {
+    'light': 'bg-white/95 backdrop-blur-md border-stone-200',
+    'dark': 'bg-stone-900/95 border-stone-800',
+    'high-contrast': 'bg-black border-white',
+    'neon': 'bg-neon-bg/95 border-neon-pink/50 shadow-[0_4px_10px_rgba(255,0,255,0.15)]'
+  }[theme];
+
   return (
-    <div className={`flex h-screen overflow-hidden font-sans transition-colors duration-300 relative ${theme === 'high-contrast' ? 'bg-black text-white' : 'bg-stone-50 text-stone-900'}`}>
+    <div className={`flex h-screen overflow-hidden font-sans transition-colors duration-300 relative ${bgClass}`}>
       
       {/* Background Texture for "Canvas" feel */}
-      {theme !== 'high-contrast' && (
+      {(theme === 'light' || theme === 'dark') && (
         <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none z-0 mix-blend-multiply"></div>
+      )}
+      
+      {/* Grid line texture for Neon */}
+      {theme === 'neon' && (
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-20" style={{
+            backgroundImage: 'linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+        }}></div>
       )}
 
       <a href="#main-content" className="skip-link">Skip to main content</a>
@@ -104,7 +158,7 @@ export default function App() {
         <header 
             className={`
                 px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm border-b
-                ${theme === 'high-contrast' ? 'bg-black border-white' : 'bg-white/95 backdrop-blur-md border-stone-200'}
+                ${headerClass}
             `}
             role="banner"
         >
@@ -120,18 +174,20 @@ export default function App() {
 
             <div className="relative w-full md:w-96 group" role="search">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={18} className={theme === 'high-contrast' ? 'text-white' : 'text-stone-400'} aria-hidden="true" />
+                <Search size={18} className={theme === 'high-contrast' ? 'text-white' : theme === 'neon' ? 'text-neon-pink' : 'text-stone-400'} aria-hidden="true" />
               </div>
               <input
                 type="text"
                 id="search-input"
-                placeholder="Find your muse (WBS, Risk, Code)..."
+                placeholder={theme === 'neon' ? "INIT_QUERY..." : "Find your muse (WBS, Risk, Code)..."}
                 className={`
                     pl-10 pr-4 py-2 w-full border-2 rounded-full text-sm transition-all
-                    focus:outline-none focus:ring-4 focus:ring-klimt-gold
+                    focus:outline-none 
                     ${theme === 'high-contrast' 
-                        ? 'bg-black border-white text-white placeholder-gray-400' 
-                        : 'bg-stone-50 border-stone-200 text-stone-900 focus:border-stone-400'}
+                        ? 'bg-black border-white text-white placeholder-gray-400 focus:ring-4 focus:ring-yellow-400' 
+                        : theme === 'neon'
+                            ? 'bg-black border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:border-neon-pink focus:shadow-neon'
+                            : 'bg-stone-50 border-stone-200 text-stone-900 focus:border-stone-400 focus:ring-4 focus:ring-klimt-gold'}
                 `}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -145,7 +201,10 @@ export default function App() {
           <div className="hidden md:flex items-center gap-3">
              <button
                 onClick={() => { playClick(); handleOpenChat(); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold ${theme === 'high-contrast' ? 'bg-white text-black border-white' : 'bg-stone-100 text-stone-700 border-stone-200 hover:border-klimt-gold'}`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold 
+                    ${theme === 'high-contrast' ? 'bg-white text-black border-white' : 
+                      theme === 'neon' ? 'bg-black text-neon-green border-neon-green hover:shadow-neon' :
+                      'bg-stone-100 text-stone-700 border-stone-200 hover:border-klimt-gold'}`}
              >
                 <MessageSquare size={18} />
                 <span>AI Chat</span>
@@ -153,15 +212,23 @@ export default function App() {
 
              <button 
                 onClick={toggleTheme}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold ${theme === 'high-contrast' ? 'border-white text-white hover:bg-white hover:text-black' : 'border-stone-200 hover:bg-stone-100'}`}
-                title="Toggle Theme: Light -> Dark -> High Contrast"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide border-2 transition-all hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold 
+                    ${theme === 'high-contrast' ? 'border-white text-white hover:bg-white hover:text-black' : 
+                      theme === 'neon' ? 'border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black' :
+                      'border-stone-200 hover:bg-stone-100'}`}
+                title="Toggle Theme: Light -> Dark -> High Contrast -> Neon"
              >
                 {getThemeIcon()}
                 <span className="sr-only">Toggle Theme</span>
-                <span>{theme === 'high-contrast' ? 'Contrast' : theme}</span>
+                <span>{getThemeLabel()}</span>
              </button>
 
-             <button className={`flex items-center gap-2 font-bold text-sm uppercase tracking-wide px-4 py-2 rounded-full border-2 transition-all hover:bg-stone-100 hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold ${theme === 'high-contrast' ? 'border-white' : 'border-stone-200'}`}>
+             <button 
+                onClick={handleExportBundle}
+                className={`flex items-center gap-2 font-bold text-sm uppercase tracking-wide px-4 py-2 rounded-full border-2 transition-all hover:bg-stone-100 hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-klimt-gold 
+                ${theme === 'high-contrast' ? 'border-white' : 
+                  theme === 'neon' ? 'border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-white' :
+                  'border-stone-200'}`}>
               <Download size={18} aria-hidden="true" />
               <span>Export</span>
             </button>
@@ -185,10 +252,12 @@ export default function App() {
                     {/* Hero Section - Art Fusion Style */}
                     <div className={`
                         mb-10 p-8 md:p-12 relative overflow-hidden rounded-sm border-2
-                        ${theme === 'high-contrast' ? 'border-yellow-400 bg-black' : 'border-klimt-gold bg-stone-50 shadow-xl'}
+                        ${theme === 'high-contrast' ? 'border-yellow-400 bg-black' : 
+                          theme === 'neon' ? 'border-neon-pink bg-black shadow-[0_0_30px_rgba(255,0,255,0.2)]' :
+                          'border-klimt-gold bg-stone-50 shadow-xl'}
                     `}>
                         {/* Decorative Background for Hero */}
-                        {theme !== 'high-contrast' && (
+                        {(theme === 'light' || theme === 'dark') && (
                            <>
                              <div className="absolute top-0 right-0 w-64 h-64 bg-klimt-gold opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gogh-blue opacity-10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -199,17 +268,27 @@ export default function App() {
                         <div className="relative z-10 text-center md:text-left">
                             <div className={`
                                 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-2 mb-6 font-bold uppercase tracking-widest text-xs
-                                ${theme === 'high-contrast' ? 'border-white text-white' : 'border-klimt-gold text-klimt-text bg-white/80'}
+                                ${theme === 'high-contrast' ? 'border-white text-white' : 
+                                  theme === 'neon' ? 'border-neon-cyan text-neon-cyan shadow-neon-cyan' :
+                                  'border-klimt-gold text-klimt-text bg-white/80'}
                             `}>
-                                <span className="w-2 h-2 rounded-full bg-current"></span>
+                                <span className={`w-2 h-2 rounded-full ${theme === 'neon' ? 'bg-neon-pink' : 'bg-current'}`}></span>
                                 {activeSection.category} Collection
                             </div>
                             
-                            <h2 className={`text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight ${theme === 'high-contrast' ? 'text-yellow-400 underline decoration-2' : 'text-stone-900'}`}>
+                            <h2 className={`text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight 
+                                ${theme === 'high-contrast' ? 'text-yellow-400 underline decoration-2' : 
+                                  theme === 'neon' ? 'text-neon-pink drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]' :
+                                  'text-stone-900'}
+                            `}>
                                 {activeSection.title}
                             </h2>
                             
-                            <p className={`text-lg md:text-xl max-w-3xl leading-relaxed ${theme === 'high-contrast' ? 'text-white font-bold' : 'text-stone-600 font-serif italic'}`}>
+                            <p className={`text-lg md:text-xl max-w-3xl leading-relaxed 
+                                ${theme === 'high-contrast' ? 'text-white font-bold' : 
+                                  theme === 'neon' ? 'text-stone-300 font-mono' :
+                                  'text-stone-600 font-serif italic'}
+                            `}>
                                 {activeSection.description}
                             </p>
                         </div>
@@ -233,12 +312,14 @@ export default function App() {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-full text-stone-400" role="status">
+                <div className={`flex flex-col items-center justify-center h-full ${theme === 'neon' ? 'text-neon-cyan' : 'text-stone-400'}`} role="status">
                     <Search size={64} className="mb-4 opacity-20" aria-hidden="true" />
                     <p className="text-2xl font-serif">No masterpieces found for "{searchTerm}"</p>
                     <button 
                         onClick={() => { playClick(); setSearchTerm(''); }}
-                        className="mt-6 text-klimt-text hover:underline font-bold uppercase tracking-widest border-b-2 border-transparent hover:border-klimt-gold transition-colors"
+                        className={`mt-6 font-bold uppercase tracking-widest border-b-2 border-transparent transition-colors
+                            ${theme === 'neon' ? 'text-neon-pink hover:border-neon-pink' : 'text-klimt-text hover:underline hover:border-klimt-gold'}
+                        `}
                     >
                         Clear Canvas
                     </button>

@@ -49,6 +49,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeSectionId, onS
 
   const categories = Object.keys(groupedSections) as Category[];
 
+  // Dynamic Styles
+  const containerClasses = {
+    'light': 'bg-stone-900 border-stone-800 text-stone-300',
+    'dark': 'bg-stone-900 border-stone-800 text-stone-300',
+    'high-contrast': 'bg-black border-white text-yellow-400',
+    'neon': 'bg-neon-bg border-neon-pink/50 text-neon-cyan shadow-[0_0_15px_rgba(255,0,255,0.2)]'
+  }[theme];
+
+  const brandTextClasses = {
+    'light': 'text-stone-100',
+    'dark': 'text-stone-100',
+    'high-contrast': 'text-yellow-400',
+    'neon': 'text-neon-pink drop-shadow-[0_0_5px_rgba(255,0,255,0.8)]'
+  }[theme];
+
+  const categoryHeaderClasses = {
+    'light': 'text-klimt-accent',
+    'dark': 'text-klimt-accent',
+    'high-contrast': 'text-white border-b border-white pb-1',
+    'neon': 'text-neon-green border-b border-neon-green/30 pb-1'
+  }[theme];
+
+  const getButtonClasses = (isActive: boolean) => {
+    if (theme === 'high-contrast') {
+      return isActive 
+        ? 'bg-yellow-900 border-yellow-400 text-yellow-400 font-bold underline decoration-2' 
+        : 'border-transparent text-white hover:underline hover:bg-stone-900';
+    }
+    if (theme === 'neon') {
+      return isActive
+        ? 'bg-neon-surface border-neon-cyan text-neon-cyan shadow-neon-cyan font-bold'
+        : 'border-transparent text-stone-400 hover:text-neon-pink hover:bg-neon-surface/50 hover:border-neon-pink';
+    }
+    // Standard (Light/Dark)
+    return isActive
+      ? 'bg-stone-800 border-klimt-gold text-klimt-gold font-semibold shadow-inner'
+      : 'border-transparent text-stone-400 hover:text-stone-100 hover:bg-stone-800 hover:border-stone-700';
+  };
+
   return (
     <nav 
         className={`
@@ -56,18 +95,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeSectionId, onS
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           md:relative md:translate-x-0
           flex flex-col border-r 
-          ${theme === 'high-contrast' ? 'bg-black border-white text-yellow-400' : 'bg-stone-900 border-stone-800 text-stone-300'}
+          ${containerClasses}
         `}
         aria-label="Main Navigation"
     >
-      <div className="p-6 border-b border-stone-800">
+      <div className={`p-6 border-b ${theme === 'neon' ? 'border-neon-pink/30' : 'border-stone-800'}`}>
         <h1 className="text-xl font-serif font-bold flex items-center gap-2">
-          <Palette aria-hidden="true" className="text-klimt-gold" size={24} />
-          <span className={theme === 'high-contrast' ? 'text-yellow-400' : 'text-stone-100'}>
+          <Palette aria-hidden="true" className={theme === 'neon' ? 'text-neon-pink' : 'text-klimt-gold'} size={24} />
+          <span className={brandTextClasses}>
             PM Genius
           </span>
         </h1>
-        <p className={`text-xs mt-2 ${theme === 'high-contrast' ? 'text-white' : 'text-stone-500'}`}>
+        <p className={`text-xs mt-2 ${theme === 'high-contrast' ? 'text-white' : theme === 'neon' ? 'text-stone-400' : 'text-stone-500'}`}>
            Author: BalajiDuddukuri
         </p>
       </div>
@@ -77,9 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeSectionId, onS
           <div key={cat} role="group" aria-labelledby={`cat-${cat}`}>
             <div 
               id={`cat-${cat}`}
-              className={`px-3 mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest
-                ${theme === 'high-contrast' ? 'text-white border-b border-white pb-1' : 'text-klimt-accent'}
-              `}
+              className={`px-3 mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest ${categoryHeaderClasses}`}
             >
               {CATEGORY_CONFIG[cat].icon}
               {CATEGORY_CONFIG[cat].label}
@@ -96,14 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sections, activeSectionId, onS
                     className={`
                       w-full text-left px-3 py-3 rounded-none border-l-4 transition-all duration-200 flex items-center justify-between
                       focus:outline-none focus-visible:ring-inset
-                      ${activeSectionId === section.id 
-                        ? theme === 'high-contrast' 
-                            ? 'bg-yellow-900 border-yellow-400 text-yellow-400 font-bold underline decoration-2'
-                            : 'bg-stone-800 border-klimt-gold text-klimt-gold font-semibold shadow-inner' 
-                        : theme === 'high-contrast'
-                            ? 'border-transparent text-white hover:underline hover:bg-stone-900'
-                            : 'border-transparent text-stone-400 hover:text-stone-100 hover:bg-stone-800 hover:border-stone-700'
-                      }
+                      ${getButtonClasses(activeSectionId === section.id)}
                     `}
                   >
                     <span className="truncate">{section.title}</span>

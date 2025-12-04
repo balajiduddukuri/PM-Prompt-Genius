@@ -3,23 +3,19 @@ import { ThemeMode, ThemeContextType } from '../types';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Base64 short "click" sound for audio feedback (UI sound)
-const CLICK_SOUND = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA=="; 
-// Note: In a real environment, use a real .mp3/.wav. Using a silent placeholder for structure as per restrictions, 
-// but implementing the logic.
-// Simulating a beep with AudioContext for better accessibility if possible, but fallback to structure.
-
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>('neon');
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('dark', 'high-contrast');
+    root.classList.remove('dark', 'high-contrast', 'neon');
     
     if (theme === 'dark') {
       root.classList.add('dark');
     } else if (theme === 'high-contrast') {
       root.classList.add('high-contrast');
+    } else if (theme === 'neon') {
+      root.classList.add('neon');
     }
   }, [theme]);
 

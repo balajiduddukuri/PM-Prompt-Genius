@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PromptItem } from '../types';
 import { generateContent, streamChat, ChatMessage } from '../services/geminiService';
-import { X, Send, Sparkles, Loader2, Maximize2, Minimize2, Check, Brain, MessageSquare, Terminal } from 'lucide-react';
+import { X, Send, Sparkles, Loader2, Maximize2, Minimize2, Check, Brain, MessageSquare, Terminal, Download } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { SimpleMarkdown } from './SimpleMarkdown';
 
-interface PlaygroundProps {
-  item: PromptItem | null;
-  isOpen: boolean;
-  onClose: () => void;
-  initialMode?: 'generator' | 'chat';
-}
-
-const MOTIVATIONAL_QUOTES = [
+// Local fallback used since constants export is missing
+const QUOTES = [
   "Creativity takes courage. - Henri Matisse",
   "The art of simplicity is a puzzle of complexity. - Douglas Horton",
   "Design is not just what it looks like, it is how it works. - Steve Jobs",
@@ -21,6 +16,13 @@ const MOTIVATIONAL_QUOTES = [
   "Innovation distinguishes between a leader and a follower. - Steve Jobs",
   "Code is poetry. - WordPress",
 ];
+
+interface PlaygroundProps {
+  item: PromptItem | null;
+  isOpen: boolean;
+  onClose: () => void;
+  initialMode?: 'generator' | 'chat';
+}
 
 export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, initialMode = 'generator' }) => {
   // Modes
@@ -50,7 +52,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
 
   useEffect(() => {
     if (isOpen) {
-      setRandomQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
+      setRandomQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
       setMode(initialMode);
     }
   }, [isOpen, initialMode]);
@@ -136,12 +138,41 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
     setAnnouncement("Chat response complete.");
   };
 
+  const handleDownload = () => {
+      playClick();
+      const content = mode === 'generator' 
+        ? `PROMPT:\n${input}\n\nRESPONSE:\n${response}`
+        : chatHistory.map(m => `${m.role.toUpperCase()}:\n${m.text}\n`).join('\n---\n');
+      
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pm-genius-${mode}-${new Date().toISOString().slice(0,10)}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+  };
+
   // --- Styles ---
 
-  const modalBg = theme === 'high-contrast' ? 'bg-black border-2 border-white' : 'bg-stone-50';
-  const textPrimary = theme === 'high-contrast' ? 'text-yellow-400' : 'text-stone-900';
+  let modalBg = 'bg-stone-50';
+  let textPrimary = 'text-stone-900';
+  let borderClass = 'border-stone-200';
+
+  if (theme === 'high-contrast') {
+    modalBg = 'bg-black border-2 border-white';
+    textPrimary = 'text-yellow-400';
+    borderClass = 'border-white';
+  } else if (theme === 'neon') {
+    modalBg = 'bg-neon-bg border-2 border-neon-pink shadow-[0_0_50px_rgba(255,0,255,0.2)]';
+    textPrimary = 'text-neon-pink';
+    borderClass = 'border-neon-purple/50';
+  }
+
   const thinkingColor = isThinking 
-    ? (theme === 'high-contrast' ? 'text-cyan-400' : 'text-purple-600') 
+    ? (theme === 'high-contrast' ? 'text-cyan-400' : theme === 'neon' ? 'text-neon-green' : 'text-purple-600') 
     : (theme === 'high-contrast' ? 'text-gray-500' : 'text-stone-400');
 
   return (
@@ -160,28 +191,42 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
         }`}
       >
         {/* Header */}
-        <div className={`flex flex-col md:flex-row md:items-center justify-between p-4 border-b gap-4 ${theme === 'high-contrast' ? 'border-white' : 'border-stone-200 bg-white'}`}>
+        <div className={`flex flex-col md:flex-row md:items-center justify-between p-4 border-b gap-4 ${borderClass} ${theme === 'light' ? 'bg-white' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${theme === 'high-contrast' ? 'bg-white text-black' : 'bg-klimt-gold text-white'}`}>
+            <div className={`p-2 rounded-full ${
+                theme === 'high-contrast' ? 'bg-white text-black' : 
+                theme === 'neon' ? 'bg-neon-surface text-neon-cyan border border-neon-cyan' :
+                'bg-klimt-gold text-white'
+            }`}>
                 <Sparkles size={20} aria-hidden="true" />
             </div>
             <div>
                 <h2 id="playground-title" className={`font-serif font-bold text-lg ${textPrimary}`}>Artist's Playground</h2>
-                <p className="text-xs uppercase tracking-wider font-bold opacity-60">Gemini Powered</p>
+                <p className={`text-xs uppercase tracking-wider font-bold opacity-60 ${theme === 'neon' ? 'text-neon-cyan/70' : ''}`}>Gemini Powered</p>
             </div>
           </div>
 
           {/* Controls Center */}
-          <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-lg border border-stone-200 mx-auto md:mx-0">
+          <div className={`flex items-center gap-2 p-1 rounded-lg border mx-auto md:mx-0 ${
+              theme === 'neon' ? 'bg-black border-neon-purple' : 'bg-stone-100 border-stone-200'
+          }`}>
              <button
                 onClick={() => setMode('generator')}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${mode === 'generator' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500 hover:text-stone-900'}`}
+                className={`px-3 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${
+                    mode === 'generator' 
+                    ? theme === 'neon' ? 'bg-neon-purple text-white shadow-neon' : 'bg-white shadow-sm text-stone-900'
+                    : 'text-stone-500 hover:text-stone-900'
+                }`}
              >
                 <Terminal size={14} /> Generator
              </button>
              <button
                 onClick={() => setMode('chat')}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${mode === 'chat' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500 hover:text-stone-900'}`}
+                className={`px-3 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${
+                    mode === 'chat'
+                    ? theme === 'neon' ? 'bg-neon-purple text-white shadow-neon' : 'bg-white shadow-sm text-stone-900'
+                    : 'text-stone-500 hover:text-stone-900'
+                }`}
              >
                 <MessageSquare size={14} /> Chat
              </button>
@@ -192,7 +237,9 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
             <button
                 onClick={() => { playClick(); setIsThinking(!isThinking); }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${isThinking 
-                    ? (theme === 'high-contrast' ? 'border-cyan-400 bg-black text-cyan-400' : 'border-purple-200 bg-purple-50 text-purple-700')
+                    ? (theme === 'high-contrast' ? 'border-cyan-400 bg-black text-cyan-400' : 
+                       theme === 'neon' ? 'border-neon-green bg-black text-neon-green shadow-[0_0_10px_rgba(57,255,20,0.4)]' :
+                       'border-purple-200 bg-purple-50 text-purple-700')
                     : 'border-transparent text-stone-400 hover:bg-stone-100'}`}
                 title="Enable Thinking Mode (Gemini 3.0 Pro)"
                 aria-pressed={isThinking}
@@ -203,9 +250,17 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
 
             <div className="w-px h-6 bg-stone-300 mx-1 hidden md:block"></div>
 
+            <button
+                onClick={handleDownload}
+                className={`p-2 rounded-full transition-colors ${theme === 'neon' ? 'text-neon-cyan hover:bg-neon-surface' : 'hover:bg-stone-200'}`}
+                title="Download Result (Markdown)"
+            >
+                <Download size={20} />
+            </button>
+
             <button 
                 onClick={() => { playClick(); setIsExpanded(!isExpanded); }}
-                className="p-2 hover:bg-stone-200 rounded-full transition-colors"
+                className={`p-2 rounded-full transition-colors ${theme === 'neon' ? 'text-neon-cyan hover:bg-neon-surface' : 'hover:bg-stone-200'}`}
                 aria-label={isExpanded ? "Collapse" : "Expand"}
             >
                 {isExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
@@ -213,7 +268,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
             <button 
                 ref={closeButtonRef}
                 onClick={() => { playClick(); onClose(); }}
-                className="p-2 hover:bg-red-100 hover:text-red-700 rounded-full transition-colors"
+                className={`p-2 rounded-full transition-colors ${theme === 'neon' ? 'text-neon-pink hover:bg-neon-surface' : 'hover:bg-red-100 hover:text-red-700'}`}
                 aria-label="Close"
             >
                 <X size={24} />
@@ -225,20 +280,29 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
         {mode === 'generator' ? (
              <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
                 {/* Generator Input */}
-                <div className={`p-5 flex flex-col border-b md:border-b-0 md:border-r ${theme === 'high-contrast' ? 'border-white' : 'border-stone-200'} md:w-1/2 h-1/2 md:h-full`}>
+                <div className={`p-5 flex flex-col border-b md:border-b-0 md:border-r ${borderClass} md:w-1/2 h-1/2 md:h-full`}>
                     <label htmlFor="prompt-input" className={`text-sm font-bold uppercase mb-2 ${textPrimary}`}>Input Canvas</label>
                     <textarea
                         id="prompt-input"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        className={`flex-1 w-full p-4 border-2 rounded-lg resize-none font-mono text-sm leading-relaxed focus:outline-none focus:ring-4 focus:ring-klimt-gold ${theme === 'high-contrast' ? 'bg-black text-white border-white' : 'bg-white border-stone-300 text-stone-800'}`}
+                        className={`
+                            flex-1 w-full p-4 border-2 rounded-lg resize-none font-mono text-sm leading-relaxed focus:outline-none 
+                            ${theme === 'high-contrast' ? 'bg-black text-white border-white focus:ring-4 focus:ring-yellow-400' : 
+                              theme === 'neon' ? 'bg-black text-neon-green border-neon-purple focus:border-neon-pink focus:shadow-neon' :
+                              'bg-white border-stone-300 text-stone-800 focus:ring-4 focus:ring-klimt-gold'}
+                        `}
                         placeholder="Enter your prompt here..."
                     />
                     <div className="mt-4 flex justify-end">
                         <button
                             onClick={handleRunGenerator}
                             disabled={isLoading || !input.trim()}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${theme === 'high-contrast' ? 'bg-white text-black hover:bg-yellow-400' : 'bg-gogh-blue text-white hover:bg-blue-900 shadow-lg'}`}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
+                                theme === 'high-contrast' ? 'bg-white text-black hover:bg-yellow-400' : 
+                                theme === 'neon' ? 'bg-neon-cyan text-black hover:bg-white hover:shadow-neon-cyan' :
+                                'bg-gogh-blue text-white hover:bg-blue-900 shadow-lg'
+                            }`}
                         >
                             {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                             {isLoading ? 'Painting...' : 'Generate'}
@@ -247,38 +311,50 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
                 </div>
 
                 {/* Generator Output */}
-                <div className={`p-5 flex flex-col md:w-1/2 h-1/2 md:h-full ${theme === 'high-contrast' ? 'bg-black' : 'bg-stone-100'}`}>
+                <div className={`p-5 flex flex-col md:w-1/2 h-1/2 md:h-full ${theme === 'high-contrast' ? 'bg-black' : theme === 'neon' ? 'bg-neon-surface' : 'bg-stone-100'}`}>
                     <label className={`text-sm font-bold uppercase mb-2 flex justify-between items-center ${textPrimary}`}>
                         <span>Result</span>
                         {response && <span className="text-xs text-green-600 font-bold flex items-center gap-1"><Check size={12}/> Ready</span>}
                     </label>
-                    <div className={`flex-1 border-2 rounded-lg p-4 overflow-y-auto font-mono text-sm whitespace-pre-wrap ${theme === 'high-contrast' ? 'bg-black text-yellow-400 border-white' : 'bg-white border-stone-200 text-stone-800 shadow-inner'}`} tabIndex={0}>
-                        {response || <EmptyState isLoading={isLoading} quote={randomQuote} />}
+                    <div className={`flex-1 border-2 rounded-lg p-4 overflow-y-auto ${
+                        theme === 'high-contrast' ? 'bg-black text-yellow-400 border-white' : 
+                        theme === 'neon' ? 'bg-black text-neon-cyan border-neon-cyan/50 shadow-[inset_0_0_20px_rgba(0,255,255,0.1)]' :
+                        'bg-white border-stone-200 text-stone-800 shadow-inner'
+                    }`} tabIndex={0}>
+                        {response ? <SimpleMarkdown content={response} /> : <EmptyState isLoading={isLoading} quote={randomQuote} theme={theme} />}
                         <div ref={responseEndRef} />
                     </div>
                 </div>
              </div>
         ) : (
             // Chat Mode Interface
-            <div className="flex-1 flex flex-col overflow-hidden bg-stone-50">
-                 <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${theme === 'high-contrast' ? 'bg-black' : 'bg-stone-100'}`}>
-                    {chatHistory.length === 0 && <EmptyState isLoading={false} quote={randomQuote} isChat />}
+            <div className={`flex-1 flex flex-col overflow-hidden ${theme === 'neon' ? 'bg-black' : 'bg-stone-50'}`}>
+                 <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${theme === 'high-contrast' ? 'bg-black' : theme === 'neon' ? 'bg-neon-bg' : 'bg-stone-100'}`}>
+                    {chatHistory.length === 0 && <EmptyState isLoading={false} quote={randomQuote} isChat theme={theme} />}
                     
                     {chatHistory.map((msg, idx) => (
                         <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                             <div className={`
-                                max-w-[85%] rounded-2xl px-5 py-3 shadow-sm font-mono text-sm whitespace-pre-wrap
+                                max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm
                                 ${msg.role === 'user' 
-                                    ? (theme === 'high-contrast' ? 'bg-white text-black border border-white' : 'bg-gogh-blue text-white') 
-                                    : (theme === 'high-contrast' ? 'bg-black text-yellow-400 border border-yellow-400' : 'bg-white text-stone-800 border border-stone-200')}
+                                    ? (theme === 'high-contrast' ? 'bg-white text-black border border-white' : 
+                                       theme === 'neon' ? 'bg-neon-pink text-black border border-neon-pink' :
+                                       'bg-gogh-blue text-white') 
+                                    : (theme === 'high-contrast' ? 'bg-black text-yellow-400 border border-yellow-400' : 
+                                       theme === 'neon' ? 'bg-neon-surface text-neon-cyan border border-neon-cyan' :
+                                       'bg-white text-stone-800 border border-stone-200')}
                             `}>
-                                {msg.text}
+                                <SimpleMarkdown content={msg.text} />
                             </div>
                         </div>
                     ))}
                     {isStreaming && (
                         <div className="flex justify-start">
-                             <div className={`p-3 rounded-2xl flex items-center gap-2 ${theme === 'high-contrast' ? 'text-cyan-400' : 'text-stone-400'}`}>
+                             <div className={`p-3 rounded-2xl flex items-center gap-2 ${
+                                 theme === 'high-contrast' ? 'text-cyan-400' : 
+                                 theme === 'neon' ? 'text-neon-green' : 
+                                 'text-stone-400'
+                             }`}>
                                 <Loader2 size={16} className="animate-spin" />
                                 <span className="text-xs font-bold uppercase">Thinking...</span>
                              </div>
@@ -287,7 +363,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
                     <div ref={chatEndRef} />
                  </div>
 
-                 <div className={`p-4 border-t ${theme === 'high-contrast' ? 'bg-black border-white' : 'bg-white border-stone-200'}`}>
+                 <div className={`p-4 border-t ${theme === 'high-contrast' ? 'bg-black border-white' : theme === 'neon' ? 'bg-neon-surface border-neon-purple' : 'bg-white border-stone-200'}`}>
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -295,12 +371,19 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
                             onChange={(e) => setChatInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && !isStreaming && handleSendChat()}
                             placeholder={isThinking ? "Ask a complex question..." : "Type your message..."}
-                            className={`flex-1 px-4 py-3 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-klimt-gold ${theme === 'high-contrast' ? 'bg-black text-white border-white' : 'bg-stone-50 border-stone-300'}`}
+                            className={`flex-1 px-4 py-3 rounded-full border-2 focus:outline-none focus:ring-2 
+                                ${theme === 'high-contrast' ? 'bg-black text-white border-white focus:ring-yellow-400' : 
+                                  theme === 'neon' ? 'bg-black text-neon-green border-neon-green/50 focus:border-neon-green focus:shadow-neon' :
+                                  'bg-stone-50 border-stone-300 focus:ring-klimt-gold'}`}
                         />
                         <button
                             onClick={handleSendChat}
                             disabled={!chatInput.trim() || isStreaming}
-                            className={`p-3 rounded-full transition-all disabled:opacity-50 ${theme === 'high-contrast' ? 'bg-white text-black' : 'bg-klimt-gold text-white hover:bg-yellow-600'}`}
+                            className={`p-3 rounded-full transition-all disabled:opacity-50 ${
+                                theme === 'high-contrast' ? 'bg-white text-black' : 
+                                theme === 'neon' ? 'bg-neon-cyan text-black hover:bg-white hover:shadow-neon-cyan' :
+                                'bg-klimt-gold text-white hover:bg-yellow-600'
+                            }`}
                         >
                             <Send size={20} />
                         </button>
@@ -314,11 +397,11 @@ export const Playground: React.FC<PlaygroundProps> = ({ item, isOpen, onClose, i
   );
 };
 
-const EmptyState = ({ isLoading, quote, isChat }: { isLoading: boolean, quote: string, isChat?: boolean }) => (
-    <div className="h-full flex flex-col items-center justify-center opacity-40 px-6">
+const EmptyState = ({ isLoading, quote, isChat, theme }: { isLoading: boolean, quote: string, isChat?: boolean, theme?: string }) => (
+    <div className={`h-full flex flex-col items-center justify-center opacity-40 px-6 ${theme === 'neon' ? 'text-neon-cyan' : ''}`}>
         {isLoading ? (
             <div className="text-center">
-                <Loader2 size={40} className="animate-spin mx-auto mb-4 text-klimt-gold" />
+                <Loader2 size={40} className={`animate-spin mx-auto mb-4 ${theme === 'neon' ? 'text-neon-pink' : 'text-klimt-gold'}`} />
                 <p className="font-serif italic">Consulting the muse...</p>
             </div>
         ) : (

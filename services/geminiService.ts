@@ -1,35 +1,20 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
-let client: GoogleGenAI | null = null;
-
-const getClient = () => {
-  if (!client) {
-    const apiKey = process.env.API_KEY || '';
-    if (!apiKey) {
-      console.warn("API_KEY not found in environment variables.");
-      return null;
-    }
-    client = new GoogleGenAI({ apiKey });
-  }
-  return client;
-};
-
 export interface GenerateOptions {
   useThinking?: boolean;
 }
 
-export const generateContent = async (prompt: string, options?: GenerateOptions): Promise<string> => {
-  const ai = getClient();
-  if (!ai) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve("Simulated Response: Please configure process.env.API_KEY to get real responses. \n\n(Thinking Mode would use Gemini 3.0 Pro here).");
-        }, 1000);
-    });
-  }
+interface GenerationConfig {
+    thinkingConfig?: {
+        thinkingBudget: number;
+    };
+}
 
+export const generateContent = async (prompt: string, options?: GenerateOptions): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   const model = options?.useThinking ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
-  const config: any = {};
+  const config: GenerationConfig = {};
   
   if (options?.useThinking) {
     // Thinking Config for Gemini 3.0 Pro
@@ -60,14 +45,10 @@ export const streamChat = async function* (
   newMessage: string, 
   options?: GenerateOptions
 ): AsyncGenerator<string, void, unknown> {
-  const ai = getClient();
-  if (!ai) {
-    yield "Simulated Chat: Please configure API_KEY.";
-    return;
-  }
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   const model = options?.useThinking ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
-  const config: any = {};
+  const config: GenerationConfig = {};
   
   if (options?.useThinking) {
     config.thinkingConfig = { thinkingBudget: 32768 };

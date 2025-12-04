@@ -1,7 +1,7 @@
 
 export type Category = 'Waterfall' | 'Agile' | 'SAFe' | 'Roles' | 'Jira' | 'General' | 'Inspiration' | 'Documentation';
 
-export type ThemeMode = 'light' | 'dark' | 'high-contrast';
+export type ThemeMode = 'light' | 'dark' | 'high-contrast' | 'neon';
 
 export interface PromptItem {
   id: string;

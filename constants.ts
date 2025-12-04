@@ -1,6 +1,7 @@
 
 
 
+
 import { Section } from './types';
 
 export const PROMPT_SECTIONS: Section[] = [
@@ -263,6 +264,12 @@ export const PROMPT_SECTIONS: Section[] = [
         title: 'Release Metrics Dashboard',
         text: 'Generate a text-based layout for a Jira dashboard focused on release metrics. Include gadgets for: Release Burndown Chart, Cycle Time trends, Release Scope (Story Points added vs completed), and Days Remaining in Release.',
         tags: ['Dashboard', 'Metrics', 'Release']
+      },
+      {
+        id: 'jira-workflow-1',
+        title: 'Standard Jira Workflow',
+        text: 'Generate a textual flowchart and description for a standard software development Jira workflow. Include states like To Do, In Progress, Code Review, QA, and Done. Describe the transition rules (e.g., who can move tickets) for each step.',
+        tags: ['Workflow', 'Process']
       },
       {
         id: 'jira-py-1',

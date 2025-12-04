@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="BalajiDuddukuri" />
+    <meta name="description" content="PM Prompt Genius - An accessible, artistic prompt library." />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PM Prompt Genius</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
+              sans: ['"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+              mono: ['"Consolas"', '"Monaco"', '"Courier New"', 'Courier', 'monospace'],
+            },
+            colors: {
+              klimt: {
+                gold: '#D4AF37', // Decoration only
+                text: '#6D5600', // WCAG AAA Compliant on white (Darkened from #8A7015)
+                dark: '#1A1A1A',
+                accent: '#C5A059',
+              },
+              gogh: {
+                blue: '#1C3F95',
+                sky: '#7FB5B5',
+                sun: '#F5D033',
+              }
+            },
+            backgroundImage: {
+              'canvas-texture': "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjY2MiIG9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')",
+              'noise': "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48ZmlsdGVyIGlkPSdub2lzZUZpbHRlcic+PGZlVHVyYnVsZW5jZSB0eXBlPSdmcmFjdGFsTm9pc2UnIGJhc2VGcmVxdWVuY3k9JzAuNjUnIG51bU9jdGF2ZXM9JzMnIHN0aXRjaFRpbGVzPSdzdGl0Y2gnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBmaWx0ZXI9J3VybCgjbm9pc2VGaWx0ZXIpJyBvcGFjaXR5PScwLjA1Jy8+PC9zdmc+')",
+            }
+          }
+        }
+      }
+    </script>
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+        "react/": "https://aistudiocdn.com/react@^19.2.1/",
+        "react": "https://aistudiocdn.com/react@^19.2.1",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+      }
+    }
+    </script>
+    <style>
+      /* Focus indicators for accessibility */
+      :focus-visible {
+        outline: 3px solid #D4AF37;
+        outline-offset: 4px;
+        border-radius: 2px;
+      }
+      .high-contrast :focus-visible {
+        outline: 4px solid #FFFF00;
+        outline-offset: 4px;
+        background-color: #000;
+        color: #FFF;
+        box-shadow: 0 0 0 6px #000;
+      }
+      /* Skip link styling */
+      .skip-link {
+        position: absolute;
+        top: -100px;
+        left: 10px;
+        background: #D4AF37;
+        color: #000;
+        padding: 16px 24px;
+        font-weight: bold;
+        z-index: 100;
+        transition: top 0.2s;
+        text-decoration: underline;
+        border: 2px solid #000;
+      }
+      .skip-link:focus {
+        top: 10px;
+      }
+      /* Smooth scrolling for anchor links */
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+</head>
+  <body class="bg-stone-50 text-stone-900 selection:bg-klimt-gold selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
